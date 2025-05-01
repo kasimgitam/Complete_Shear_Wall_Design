@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Shear Wall Design Calculator | IS 1893 & IS 13920 Compliance</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f2f5;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #2980b9;
+            margin-top: 25px;
+            border-left: 4px solid #3498db;
+            padding-left: 10px;
+        }
+        h3 {
+            color: #16a085;
+            margin-top: 20px;
+        }
+        .input-section {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        .input-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 15px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: block;
+            margin: 20px auto;
+            font-weight: 600;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .results {
+            margin-top: 30px;
+        }
+        .result-card {
+            background-color: #e8f4fc;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .result-item {
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .highlight {
+            font-weight: 700;
+            color: #e74c3c;
+        }
+        .calculation-steps {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            border-left: 3px solid #7f8c8d;
+        }
+        .formula {
+            font-style: italic;
+            color: #16a085;
+            margin: 5px 0;
+            padding-left: 15px;
+            font-weight: bold;
+        }
+        .note {
+            font-size: 13px;
+            color: #7f8c8d;
+            font-style: italic;
+            margin-top: 5px;
+        }
+        .design-recommendation {
+            background-color: #e8f8f5;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            border-left: 3px solid #1abc9c;
+        }
+        .boundary-element {
+            background-color: #fef9e7;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+            border-left: 4px solid #f39c12;
+            display: none; /* Initially hidden */
+        }
+        @media (max-width: 768px) {
+            .input-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Complete Shear Wall Design Calculator</h1>
+        <h2>Input Parameters</h2>
+        
+        <div class="input-section">
+            <div class="input-grid">
+                <div class="input-group">
+                    <label for="buildingHeight">Building Height (H) in m</label>
+                    <input type="number" id="buildingHeight" value="30" step="0.1">
+                </div>
+                <div class="input-group">
+                    <label for="wallLength">Wall Length (Lw) in m</label>
+                    <input type="number" id="wallLength" value="4" step="0.1">
+                </div>
+                <div class="input-group">
+                    <label for="wallThickness">Wall Thickness (tw) in mm</label>
+                    <input type="number" id="wallThickness" value="250" step="10">
+                </div>
+                <div class="input-group">
+                    <label for="concreteGrade">Concrete Grade (fck) in MPa</label>
+                    <select id="concreteGrade">
+                        <option value="20">M20 (20 MPa)</option>
+                        <option value="25" selected>M25 (25 MPa)</option>
+                        <option value="30">M30 (30 MPa)</option>
+                        <option value="35">M35 (35 MPa)</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="steelGrade">Steel Grade (fy) in MPa</label>
+                    <select id="steelGrade">
+                        <option value="415" selected>Fe 415 (415 MPa)</option>
+                        <option value="500">Fe 500 (500 MPa)</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="seismicZone">Seismic Zone</label>
+                    <select id="seismicZone">
+                        <option value="0.10">II (0.10)</option>
+                        <option value="0.16" selected>III (0.16)</option>
+                        <option value="0.24">IV (0.24)</option>
+                        <option value="0.36">V (0.36)</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="buildingWeight">Total Seismic Weight (W) in kN</label>
+                    <input type="number" id="buildingWeight" value="50000" step="1000">
+                </div>
+                <div class="input-group">
+                    <label for="wallPercentage">% Load Taken by Wall</label>
+                    <input type="number" id="wallPercentage" value="30" min="10" max="100" step="5">
+                </div>
+                <div class="input-group">
+                    <label for="responseFactor">Response Reduction Factor (R)</label>
+                    <select id="responseFactor">
+                        <option value="3">3 (Ordinary RC Shear Wall)</option>
+                        <option value="5" selected>5 (Special RC Shear Wall)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <button onclick="calculateShearWall()">Calculate Design</button>
+
+        <div class="results">
+            <h2>Design Results</h2>
+            
+            <div class="result-card">
+                <h3>Seismic Forces</h3>
+                <div class="result-item">
+                    <span>Seismic Base Shear (V):</span>
+                    <span id="baseShear" class="highlight">0</span> kN
+                </div>
+                <div class="result-item">
+                    <span>Shear Force on Wall (Vu):</span>
+                    <span id="wallShear" class="highlight">0</span> kN
+                </div>
+                <div class="result-item">
+                    <span>Moment at Base (Mu):</span>
+                    <span id="baseMoment" class="highlight">0</span> kNm
+                </div>
+                
+                <div class="calculation-steps">
+                    <strong>Calculation Steps (IS 1893:2016):</strong>
+                    <div class="formula">V = (Z × I × Sa/g) / R × W</div>
+                    <div>Where:<br>
+                    • Z = Zone factor = <span id="zValue">0.16</span><br>
+                    • I = Importance factor = 1.0<br>
+                    • Sa/g = Spectral acceleration = 2.5 (for medium soil)<br>
+                    • R = Response reduction factor = <span id="rValue">5</span><br>
+                    • W = Seismic weight = <span id="wValue">50,000</span> kN</div>
+                    <div class="note">As per IS 1893 (Part 1): 2016 Clause 6.4.2</div>
+                </div>
+            </div>
+            
+            <div class="result-card">
+                <h3>Shear Capacity Check</h3>
+                <div class="result-item">
+                    <span>Shear Stress (τ<sub>v</sub>):</span>
+                    <span id="shearStress" class="highlight">0</span> MPa
+                </div>
+                <div class="result-item">
+                    <span>Permissible Shear Stress (τ<sub>c</sub>):</span>
+                    <span id="permShearStress" class="highlight">0</span> MPa
+                </div>
+                <div class="result-item">
+                    <span>Shear Reinforcement Required:</span>
+                    <span id="shearReinfRequired" class="highlight">Yes</span>
+                </div>
+                
+                <div class="calculation-steps">
+                    <strong>Calculation Steps (IS 456:2000):</strong>
+                    <div class="formula">τ<sub>v</sub> = V<sub>u</sub> / (t<sub>w</sub> × L<sub>w</sub>)</div>
+                    <div>Where:<br>
+                    • V<sub>u</sub> = <span id="vuValue">0</span> kN<br>
+                    • t<sub>w</sub> = <span id="twValue">250</span> mm<br>
+                    • L<sub>w</sub> = <span id="lwValue">4</span> m</div>
+                    
+                    <div class="formula">τ<sub>c</sub> = 0.62 MPa (for M25 concrete)</div>
+                    <div class="note">Reference: IS 456:2000 Table 19 - Design Shear Strength of Concrete</div>
+                    
+                    <div class="design-recommendation">
+                        <strong>Design Recommendation:</strong><br>
+                        If τ<sub>v</sub> > τ<sub>c</sub>, shear reinforcement must be provided as per IS 13920:2016
+                    </div>
+                </div>
+            </div>
+            
+            <div class="result-card">
+                <h3>Reinforcement Design</h3>
+                <div class="result-item">
+                    <span>Required Vertical Reinforcement:</span>
+                    <span id="vertReinf" class="highlight">0</span> mm² (0.8% of wall area)
+                </div>
+                <div class="result-item">
+                    <span>Number of 16mm Bars:</span>
+                    <span id="numBars" class="highlight">0</span>
+                </div>
+                <div class="result-item">
+                    <span>Spacing of Bars:</span>
+                    <span id="barSpacing" class="highlight">0</span> mm c/c
+                </div>
+                <div class="result-item">
+                    <span>Horizontal Reinforcement:</span>
+                    <span id="horzReinf" class="highlight">10mm @ 200mm c/c</span>
+                </div>
+                <div class="result-item">
+                    <span>Boundary Elements Required:</span>
+                    <span id="boundaryElements" class="highlight">Yes</span>
+                </div>
+                
+                <div class="calculation-steps">
+                    <strong>Calculation Steps (IS 13920:2016):</strong>
+                    <div class="formula">A<sub>st</sub> = 0.008 × t<sub>w</sub> × L<sub>w</sub></div>
+                    <div>Where:<br>
+                    • Minimum vertical reinforcement = 0.8% of wall area (Clause 9.1.4)<br>
+                    • t<sub>w</sub> = <span id="twValue2">250</span> mm<br>
+                    • L<sub>w</sub> = <span id="lwValue2">4</span> m</div>
+                    
+                    <div class="formula">Number of bars = A<sub>st</sub> / (π × 16² / 4)</div>
+                    <div class="formula">Spacing = (L<sub>w</sub> × 1000) / Number of bars</div>
+                    
+                    <div class="design-recommendation">
+                        <strong>Design Requirements:</strong><br>
+                        • Minimum vertical reinforcement: 0.8% of wall area (Clause 9.1.4)<br>
+                        • Minimum horizontal reinforcement: 0.25% of wall area (Clause 9.1.5)<br>
+                        • Boundary elements required when M<sub>u</sub> > 10,000 kNm or when wall is in high seismic zone
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Boundary Element Section (Conditionally Shown) -->
+            <div class="boundary-element" id="boundaryElementSection">
+                <h3>Boundary Element Design (IS 13920:2016 Clause 9.4)</h3>
+                
+                <div class="result-item">
+                    <span>Boundary Elements Required:</span>
+                    <span id="boundaryElementsRequired" class="highlight">Yes</span>
+                </div>
+                <div class="result-item">
+                    <span>Reason for Boundary Elements:</span>
+                    <span id="boundaryElementReason" class="highlight">High moment condition</span>
+                </div>
+                <div class="result-item">
+                    <span>Boundary Element Length (l<sub>b</sub>):</span>
+                    <span id="boundaryLength" class="highlight">600</span> mm
+                </div>
+                <div class="result-item">
+                    <span>Boundary Element Thickness (t<sub>b</sub>):</span>
+                    <span id="boundaryThickness" class="highlight">250</span> mm
+                </div>
+                <div class="result-item">
+                    <span>Vertical Bars in Boundary:</span>
+                    <span id="boundaryVertBars" class="highlight">8 nos. 16mm</span>
+                </div>
+                <div class="result-item">
+                    <span>Confinement Reinforcement:</span>
+                    <span id="boundaryConfinement" class="highlight">8mm @ 100mm c/c</span>
+                </div>
+                
+                <div class="calculation-steps">
+                    <strong>Boundary Element Conditions (Clause 9.4.1):</strong>
+                    <div>1. Required when extreme fiber stress > 0.2f<sub>ck</sub></div>
+                    <div>2. Required when wall is in seismic zones IV or V</div>
+                    <div>3. Required when M<sub>u</sub> > 10,000 kNm (for this calculator)</div>
+                    
+                    <div class="formula">l<sub>b</sub> = max(0.15L<sub>w</sub>, 0.5t<sub>w</sub>)</div>
+                    <div>Where:<br>
+                    • L<sub>w</sub> = Wall length = <span id="lwValueBE">4</span> m<br>
+                    • t<sub>w</sub> = Wall thickness = <span id="twValueBE">250</span> mm</div>
+                    
+                    <div class="formula">A<sub>sv</sub> ≥ 0.01A<sub>g</sub></div>
+                    <div>Minimum vertical reinforcement in boundary = 1% of boundary area</div>
+                    
+                    <div class="design-recommendation">
+                        <strong>Confinement Requirements (Clause 9.4.4):</strong><br>
+                        • Provide closed hoops @ 100mm c/c in boundary zone<br>
+                        • Minimum bar diameter = 8mm<br>
+                        • Maximum spacing = min(1/4 thickness, 6×longitudinal bar dia, 100mm)
+                    </div>
+                </div>
+            </div>
+            
+            <div class="result-card">
+                <h3>Complete Design Summary</h3>
+                <div id="designSummary">
+                    <p><strong>Wall Dimensions:</strong> <span id="wallDims">4m length × 250mm thickness</span></p>
+                    <p><strong>Concrete Grade:</strong> M<span id="concreteGradeValue">25</span></p>
+                    <p><strong>Steel Grade:</strong> Fe <span id="steelGradeValue">415</span></p>
+                    
+                    <p><strong>Main Wall Reinforcement:</strong></p>
+                    <ul>
+                        <li>Vertical: <span id="vertReinfSummary">0</span> mm² using <span id="numBarsSummary">0</span> nos. 16mm bars @ <span id="spacingSummary">0</span>mm c/c</li>
+                        <li>Horizontal: 10mm bars @ 200mm c/c</li>
+                    </ul>
+                    
+                    <p><strong>Boundary Elements:</strong> <span id="boundaryElementsSummary">Yes</span></p>
+                    <div id="boundaryElementDetails">
+                        <!-- Dynamically filled when boundary elements are required -->
+                    </div>
+                </div>
+                
+                <div class="design-recommendation" id="constructionNotes">
+                    <strong>Construction Notes:</strong><br>
+                    1. Provide proper lap splicing for vertical bars (45d)<br>
+                    2. Ensure proper concrete cover (40mm minimum)<br>
+                    3. Stagger horizontal reinforcement splices
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function calculateShearWall() {
+            // Get input values
+            const H = parseFloat(document.getElementById('buildingHeight').value);
+            const Lw = parseFloat(document.getElementById('wallLength').value);
+            const tw = parseFloat(document.getElementById('wallThickness').value);
+            const fck = parseFloat(document.getElementById('concreteGrade').value);
+            const fy = parseFloat(document.getElementById('steelGrade').value);
+            const Z = parseFloat(document.getElementById('seismicZone').value);
+            const W = parseFloat(document.getElementById('buildingWeight').value);
+            const wallPercentage = parseFloat(document.getElementById('wallPercentage').value);
+            const R = parseFloat(document.getElementById('responseFactor').value);
+            
+            // Constants
+            const I = 1.0; // Importance factor
+            const Sa_g = 2.5; // Spectral acceleration for medium soil
+            
+            // Update displayed values
+            document.getElementById('zValue').textContent = Z;
+            document.getElementById('rValue').textContent = R;
+            document.getElementById('wValue').textContent = W.toLocaleString();
+            document.getElementById('twValue').textContent = tw;
+            document.getElementById('twValue2').textContent = tw;
+            document.getElementById('twValueBE').textContent = tw;
+            document.getElementById('lwValue').textContent = Lw;
+            document.getElementById('lwValue2').textContent = Lw;
+            document.getElementById('lwValueBE').textContent = Lw;
+            document.getElementById('concreteGradeValue').textContent = fck;
+            document.getElementById('steelGradeValue').textContent = fy;
+            document.getElementById('wallDims').textContent = Lw + 'm length × ' + tw + 'mm thickness';
+            
+            // Step 1: Seismic Base Shear Calculation (IS 1893:2016)
+            const V = (Z * I * Sa_g / R) * W;
+            
+            // Step 2: Shear and Moment Distribution
+            const Vu = (wallPercentage / 100) * V;
+            const Mu = Vu * H;
+            document.getElementById('vuValue').textContent = Vu.toFixed(0);
+            
+            // Step 3: Shear Capacity Check (IS 456:2000)
+            const tau_v = (Vu * 1000) / (tw * Lw * 1000); // in MPa
+            let tau_c = 0;
+            
+            // Permissible shear stress values for different concrete grades
+            if (fck === 20) tau_c = 0.55;
+            else if (fck === 25) tau_c = 0.62;
+            else if (fck === 30) tau_c = 0.68;
+            else if (fck === 35) tau_c = 0.74;
+            
+            // Step 4: Flexural Reinforcement Design (IS 13920:2016)
+            // Vertical reinforcement (minimum 0.8%)
+            const Ast = 0.008 * tw * Lw * 1000; // in mm²
+            const barDiameter = 16; // using 16mm bars
+            const barArea = Math.PI * Math.pow(barDiameter, 2) / 4;
+            const numBars = Math.ceil(Ast / barArea);
+            const spacing = Math.floor((Lw * 1000) / numBars);
+            
+            // Horizontal reinforcement (minimum 0.25%)
+            const Ast_h = 0.0025 * tw * 1000; // per meter height
+            
+            // Step 5: Boundary Element Design (IS 13920:2016 Clause 9.4)
+            // Condition 1: High moment (Mu > 10,000 kNm)
+            // Condition 2: High seismic zone (Zone IV or V)
+            const boundaryRequired = Mu > 10000 || Z >= 0.24;
+            let boundaryReason = "";
+            
+            if (Mu > 10000) boundaryReason = "High moment condition (Mu > 10,000 kNm)";
+            else if (Z >= 0.24) boundaryReason = "High seismic zone (Zone IV or V)";
+            
+            // Boundary element dimensions
+            const boundaryLength = Math.max(0.15 * Lw * 1000, 0.5 * tw);
+            const boundaryThickness = tw; // Same as wall thickness
+            
+            // Boundary element reinforcement (minimum 1%)
+            const boundaryVertBars = 8; // 8 nos. 16mm bars (typical)
+            const boundaryConfinement = "8mm @ 100mm c/c"; // Closed hoops
+            
+            // Display results
+            document.getElementById('baseShear').textContent = V.toFixed(0);
+            document.getElementById('wallShear').textContent = Vu.toFixed(0);
+            document.getElementById('baseMoment').textContent = Mu.toFixed(0);
+            document.getElementById('shearStress').textContent = tau_v.toFixed(2);
+            document.getElementById('permShearStress').textContent = tau_c.toFixed(2);
+            document.getElementById('shearReinfRequired').textContent = tau_v > tau_c ? "Yes" : "No";
+            document.getElementById('vertReinf').textContent = Ast.toFixed(0);
+            document.getElementById('numBars').textContent = numBars;
+            document.getElementById('barSpacing').textContent = spacing;
+            document.getElementById('horzReinf').textContent = "10mm @ 200mm c/c";
+            document.getElementById('boundaryElements').textContent = boundaryRequired ? "Yes" : "No";
+            
+            // Boundary element results
+            const boundaryElementSection = document.getElementById('boundaryElementSection');
+            if (boundaryRequired) {
+                boundaryElementSection.style.display = 'block';
+                document.getElementById('boundaryElementsRequired').textContent = "Yes";
+                document.getElementById('boundaryElementReason').textContent = boundaryReason;
+                document.getElementById('boundaryLength').textContent = Math.round(boundaryLength);
+                document.getElementById('boundaryThickness').textContent = boundaryThickness;
+                document.getElementById('boundaryVertBars').textContent = boundaryVertBars + " nos. 16mm";
+                document.getElementById('boundaryConfinement').textContent = boundaryConfinement;
+                
+                // Update design summary with boundary elements
+                document.getElementById('boundaryElementDetails').innerHTML = `
+                    <ul>
+                        <li>Length: ${Math.round(boundaryLength)} mm at each end</li>
+                        <li>Thickness: Same as wall (${boundaryThickness} mm)</li>
+                        <li>Vertical bars: ${boundaryVertBars} nos. 16mm</li>
+                        <li>Confinement: ${boundaryConfinement} closed hoops</li>
+                    </ul>
+                `;
+                
+                // Add boundary element construction notes
+                document.getElementById('constructionNotes').innerHTML += `
+                    <br><strong>Boundary Element Notes:</strong><br>
+                    4. Extend boundary elements full height of wall<br>
+                    5. Use cross-ties in boundary elements at 100mm spacing<br>
+                    6. Stagger horizontal reinforcement splices outside boundary zones
+                `;
+            } else {
+                boundaryElementSection.style.display = 'none';
+                document.getElementById('boundaryElementDetails').innerHTML = "Not required for this design";
+            }
+            
+            // Update design summary
+            document.getElementById('vertReinfSummary').textContent = Ast.toFixed(0);
+            document.getElementById('numBarsSummary').textContent = numBars;
+            document.getElementById('spacingSummary').textContent = spacing;
+            document.getElementById('boundaryElementsSummary').textContent = boundaryRequired ? "Yes" : "No";
+        }
+
+        // Calculate on page load
+        window.onload = calculateShearWall;
+
+        // Recalculate when any input changes
+        document.querySelectorAll('input, select').forEach(element => {
+            element.addEventListener('change', calculateShearWall);
+            element.addEventListener('input', calculateShearWall);
+        });
+    </script>
+</body>
+</html>

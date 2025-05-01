@@ -74,8 +74,8 @@
             border-radius: 4px;
             cursor: pointer;
             transition: background-color 0.3s;
-            display: block;
-            margin: 20px auto;
+            display: inline-block;
+            margin: 0 10px;
             font-weight: 600;
         }
         button:hover {
@@ -135,11 +135,70 @@
             border-radius: 4px;
             margin-top: 20px;
             border-left: 4px solid #f39c12;
-            display: none; /* Initially hidden */
+            display: none;
+        }
+        .print-button {
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: inline-block;
+            margin: 0 10px;
+            font-weight: 600;
+        }
+        .print-button:hover {
+            background-color: #27ae60;
+        }
+        .print-only {
+            display: none;
+        }
+        .button-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+                zoom: 85%;
+            }
+            .container {
+                box-shadow: none;
+                border-radius: 0;
+                padding: 10px;
+                width: 100%;
+                max-width: 100%;
+            }
+            button {
+                display: none !important;
+            }
+            .print-only {
+                display: block;
+                margin-bottom: 20px;
+                border-bottom: 1px solid #eee;
+                padding-bottom: 10px;
+            }
+            @page {
+                size: A4;
+                margin: 10mm;
+            }
         }
         @media (max-width: 768px) {
             .input-grid {
                 grid-template-columns: 1fr;
+            }
+            .button-container {
+                display: flex;
+                flex-direction: column;
+            }
+            button, .print-button {
+                margin: 5px 0;
+                width: 100%;
             }
         }
     </style>
@@ -147,6 +206,11 @@
 <body>
     <div class="container">
         <h1>Complete Shear Wall Design Calculator</h1>
+        <div class="print-only">
+            <h2>Shear Wall Design Report</h2>
+            <p>Generated on: <span id="currentDate"></span></p>
+        </div>
+        
         <h2>Input Parameters</h2>
         
         <div class="input-section">
@@ -206,7 +270,10 @@
             </div>
         </div>
 
-        <button onclick="calculateShearWall()">Calculate Design</button>
+        <div class="button-container">
+            <button onclick="calculateShearWall()">Calculate Design</button>
+            <button onclick="printToPDF()" class="print-button">Download as PDF</button>
+        </div>
 
         <div class="results">
             <h2>Design Results</h2>
@@ -315,7 +382,6 @@
                 </div>
             </div>
             
-            <!-- Boundary Element Section (Conditionally Shown) -->
             <div class="boundary-element" id="boundaryElementSection">
                 <h3>Boundary Element Design (IS 13920:2016 Clause 9.4)</h3>
                 
@@ -524,6 +590,77 @@
             document.getElementById('numBarsSummary').textContent = numBars;
             document.getElementById('spacingSummary').textContent = spacing;
             document.getElementById('boundaryElementsSummary').textContent = boundaryRequired ? "Yes" : "No";
+        }
+
+        // Print/PDF function
+        function printToPDF() {
+            // Update the current date
+            const now = new Date();
+            document.getElementById('currentDate').textContent = now.toLocaleString();
+            
+            // Calculate first to ensure all data is current
+            calculateShearWall();
+            
+            // Create print-specific CSS
+            const printStyles = `
+                @page {
+                    size: A4;
+                    margin: 10mm;
+                }
+                body {
+                    zoom: 85%;
+                }
+                .container {
+                    width: 100% !important;
+                    max-width: 100% !important;
+                    padding: 10px !important;
+                }
+                button {
+                    display: none !important;
+                }
+                .print-only {
+                    display: block !important;
+                    margin-bottom: 20px;
+                    border-bottom: 1px solid #eee;
+                    padding-bottom: 10px;
+                }
+            `;
+            
+            // Create a style element
+            const style = document.createElement('style');
+            style.innerHTML = printStyles;
+            
+            // Clone the container
+            const container = document.querySelector('.container');
+            const clone = container.cloneNode(true);
+            clone.appendChild(style);
+            
+            // Create a new window
+            const printWindow = window.open('', '', 'width=800,height=900');
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Shear Wall Design Report</title>
+                    <style>
+                        body { font-family: Arial; margin: 0; padding: 0; }
+                        ${printStyles}
+                    </style>
+                </head>
+                <body>
+                    ${clone.innerHTML}
+                    <script>
+                        window.onload = function() {
+                            setTimeout(function() {
+                                window.print();
+                                window.close();
+                            }, 200);
+                        };
+                    <\/script>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
         }
 
         // Calculate on page load
